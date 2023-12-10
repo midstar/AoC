@@ -53,7 +53,6 @@ NODE_TYPE = {
 
 # Range set i solve below
 pipe_positions = []
-escapable_positions = []
 
 # Returns longest path to S
 def navigate(r, c, rows, from_direction):
@@ -73,45 +72,6 @@ def navigate(r, c, rows, from_direction):
         result.append(1 + navigate(r, c - 1, rows, 'e'))
 
     return max(result)
-
-def is_escapable(r, c, pipe_map, max_rec):
-    if max_rec <= 0:
-        return None
-    if escapable_positions[r][c] == 'x':
-        return True
-    if escapable_positions[r][c] == '-':
-        return False # Not escapable
-    if escapable_positions[r][c] == '?':
-        return None # Unknown
-
-    if r == 0 or r == (len(pipe_map) - 1) or c == 0 or c == (len(pipe_map[r]) - 1):
-        escapable_positions[r][c] = 'x'
-        return True
-    
-    escapable_positions[r][c] = '?' # Mark as under test
-    result = []
-    # Check north
-    if not pipe_map[r - 1][c]:
-        result.append(is_escapable(r - 1, c, pipe_map, max_rec - 1))
-    # Check south
-    if not pipe_map[r + 1][c]:
-        result.append(is_escapable(r + 1, c, pipe_map, max_rec - 1)) 
-    # Check east
-    if not pipe_map[r][c + 1]:
-        result.append(is_escapable(r, c + 1, pipe_map, max_rec - 1))         
-    # Check west
-    if not pipe_map[r][c - 1]:
-        result.append(is_escapable(r, c - 1, pipe_map, max_rec - 1))
-
-    if True in result:
-        escapable_positions[r][c] = 'x'
-        return True
-    if None in result:
-        return None
-
-    escapable_positions[r][c] = '-' # Not escapable
-    return False
-    
 
 
 def solve(input):
@@ -168,87 +128,56 @@ def solve(input):
     # Expand field in pipe_map
     pipe_map = []
     for i in range(0, len(rows) * 3):
-        pipe_map.append([False] * len(rows[0]) * 3)
+        pipe_map.append(['.'] * len(rows[0]) * 3)
     for r in range(0, len(rows)):
         rl = r * 3
         for c in range (0, len(rows[r])):
             cl = c * 3
             if not pipe_positions[r][c]:
                 continue
-            pipe_map[rl+1][cl+1] = True
+            pipe_map[rl+1][cl+1] = 'x'
             nt = NODE_TYPE[rows[r][c]]
             if nt['n']:
-                pipe_map[rl][cl+1] = True
+                pipe_map[rl][cl+1] = 'x'
             if nt['s']:
-                pipe_map[rl+2][cl+1] = True
+                pipe_map[rl+2][cl+1] = 'x'
             if nt['w']:
-                pipe_map[rl+1][cl] = True
+                pipe_map[rl+1][cl] = 'x'
             if nt['e']:
-                pipe_map[rl+1][cl+2] = True
+                pipe_map[rl+1][cl+2] = 'x'
 
     
     for row in pipe_map:
-        line = ['x' if i==True else '.' for i in row]
-        print(''.join(line))
+        print(''.join(row))
 
-    for r in range(0, len(pipe_map)):
-        new_found = 1
-        while new_found > 0:
-            new_found = 0
-            for c in range (0, len(pipe_map[r])):
-                if pipe_map[r][c] != 'x' and pipe_map[r][c] != 'O':
-                    if r == 0 or r == (len(pip_map) - 1) or c == 0 or (c == len(pipe_map[r]) - 1):
-                        pipe_map[r][c] = 'O' # Edge
-                        new_found += 1
-                    elif pipe_map[r - 1][c] == 'O' or pipe_map[r + 1][c] == 'O' or pipe_map[r][c - 1] == 'O' or pipe_map[r][c + 1] == 'O':
-                        pipe_map[r][c] = 'O' # Next to another O
-                        new_found += 1                        
+    row_found = True
+    while row_found:
+        row_found = False
+        for r in range(0, len(pipe_map)):
+            col_found = True
+            while col_found:
+                col_found = False
+                for c in range (0, len(pipe_map[r])):
+                    if pipe_map[r][c] != 'x' and pipe_map[r][c] != 'O':
+                        if r == 0 or r == (len(pipe_map) - 1) or c == 0 or (c == len(pipe_map[r]) - 1):
+                            pipe_map[r][c] = 'O' # Edge
+                            col_found = True
+                        elif pipe_map[r - 1][c] == 'O' or pipe_map[r + 1][c] == 'O' or pipe_map[r][c - 1] == 'O' or pipe_map[r][c + 1] == 'O':
+                            pipe_map[r][c] = 'O' # Next to another O
+                            col_found = True  
+                if col_found:
+                    row_found = True                     
 
     print('--------------------')
     for row in pipe_map:
-        line = ['x' if i==True else '.' for i in row]
-        print(''.join(line))
-
-'''
-    # Setup escapable_positions
-    for cols in pipe_map:
-        l = []
-        for col in cols:
-            l.append('')
-        escapable_positions.append(l)
-
-    # Start with large map
-    has_unknown = True
-    while has_unknown:
-        has_unknown = False
-        for r in range(0, len(pipe_map)):
-            for c in range (0, len(pipe_map[r])):
-                if not pipe_map[r][c]:
-                    #print('(%s, %s)' % (r,c))
-                    esc_value = 'x'
-                    res = is_escapable(r, c, pipe_map, 1000)
-                    if res == False:
-                        esc_value = '-'
-                        print('False')
-                    if res == None:
-                        esc_value = ''
-                        #has_unknown = True
-                        #print(  'Unknown')
-                    # Fill in all the unkown positions
-                    for i in range(0, len(escapable_positions)):
-                        for j in range (0, len(escapable_positions[i])):
-                            if escapable_positions[i][j] == '?':
-                                escapable_positions[i][j] = esc_value
-
-    print(escapable_positions)
-'''
+        print(''.join(row))
 
     result = 0
     # Check smaller map
     for r in range(0, len(rows)):
         for c in range (0, len(rows[r])):
             if not pipe_positions[r][c]:
-                if escapable_positions[r*3][c*3] == '-':
+                if pipe_map[r*3][c*3] == '.':
                     result += 1
 
     print('Result: %s' % result)
