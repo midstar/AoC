@@ -74,7 +74,9 @@ def navigate(r, c, rows, from_direction):
 
     return max(result)
 
-def is_escapable(r, c, pipe_map):
+def is_escapable(r, c, pipe_map, max_rec):
+    if max_rec <= 0:
+        return None
     if escapable_positions[r][c] == 'x':
         return True
     if escapable_positions[r][c] == '-':
@@ -90,16 +92,16 @@ def is_escapable(r, c, pipe_map):
     result = []
     # Check north
     if not pipe_map[r - 1][c]:
-        result.append(is_escapable(r - 1, c, pipe_map))
+        result.append(is_escapable(r - 1, c, pipe_map, max_rec - 1))
     # Check south
     if not pipe_map[r + 1][c]:
-        result.append(is_escapable(r + 1, c, pipe_map)) 
+        result.append(is_escapable(r + 1, c, pipe_map, max_rec - 1)) 
     # Check east
     if not pipe_map[r][c + 1]:
-        result.append(is_escapable(r, c + 1, pipe_map))         
+        result.append(is_escapable(r, c + 1, pipe_map, max_rec - 1))         
     # Check west
     if not pipe_map[r][c - 1]:
-        result.append(is_escapable(r, c - 1, pipe_map))
+        result.append(is_escapable(r, c - 1, pipe_map, max_rec - 1))
 
     if True in result:
         escapable_positions[r][c] = 'x'
@@ -197,18 +199,29 @@ def solve(input):
         escapable_positions.append(l)
 
     # Start with large map
-    for r in range(0, len(pipe_map)):
-        for c in range (0, len(pipe_map[r])):
-            if not pipe_map[r][c]:
-                #print('(%s, %s)' % (r,c))
-                esc_value = 'x'
-                if not is_escapable(r, c, pipe_map):
-                    esc_value = '-'
-                # Fill in all the unkown positions
-                for i in range(0, len(escapable_positions)):
-                    for j in range (0, len(escapable_positions[i])):
-                        if escapable_positions[i][j] == '?':
-                            escapable_positions[i][j] = esc_value
+    has_unknown = True
+    while has_unknown:
+        has_unknown = False
+        for r in range(0, len(pipe_map)):
+            for c in range (0, len(pipe_map[r])):
+                if not pipe_map[r][c]:
+                    #print('(%s, %s)' % (r,c))
+                    esc_value = 'x'
+                    res = is_escapable(r, c, pipe_map, 1000)
+                    if res == False:
+                        esc_value = '-'
+                        print('False')
+                    if res == None:
+                        esc_value = ''
+                        #has_unknown = True
+                        #print(  'Unknown')
+                    # Fill in all the unkown positions
+                    for i in range(0, len(escapable_positions)):
+                        for j in range (0, len(escapable_positions[i])):
+                            if escapable_positions[i][j] == '?':
+                                escapable_positions[i][j] = esc_value
+
+    print(escapable_positions)
 
 
     result = 0
