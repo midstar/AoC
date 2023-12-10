@@ -191,6 +191,25 @@ def solve(input):
         line = ['x' if i==True else '.' for i in row]
         print(''.join(line))
 
+    for r in range(0, len(pipe_map)):
+        new_found = 1
+        while new_found > 0:
+            new_found = 0
+            for c in range (0, len(pipe_map[r])):
+                if pipe_map[r][c] != 'x' and pipe_map[r][c] != 'O':
+                    if r == 0 or r == (len(pip_map) - 1) or c == 0 or (c == len(pipe_map[r]) - 1):
+                        pipe_map[r][c] = 'O' # Edge
+                        new_found += 1
+                    elif pipe_map[r - 1][c] == 'O' or pipe_map[r + 1][c] == 'O' or pipe_map[r][c - 1] == 'O' or pipe_map[r][c + 1] == 'O':
+                        pipe_map[r][c] = 'O' # Next to another O
+                        new_found += 1                        
+
+    print('--------------------')
+    for row in pipe_map:
+        line = ['x' if i==True else '.' for i in row]
+        print(''.join(line))
+
+'''
     # Setup escapable_positions
     for cols in pipe_map:
         l = []
@@ -222,7 +241,7 @@ def solve(input):
                                 escapable_positions[i][j] = esc_value
 
     print(escapable_positions)
-
+'''
 
     result = 0
     # Check smaller map
