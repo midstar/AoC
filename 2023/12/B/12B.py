@@ -67,32 +67,6 @@ def possibilities(field, groups):
 
     return count
 
-
-
-def possibilities_fast(field, groups):
-    field_l = field.replace('.',' ').split()
-    if len(field_l) == 0:
-        return 1
-    if len(field_l) == 1:
-        return possibilities(field, groups)
-    
-    result = 0
-    f = field_l.pop(0)
-    for j in range(0, len(groups) + 1):
-        g = groups[0:j]
-        key = (f, tuple(g))
-        res = 0
-        if key in storage:
-            res = storage[key]
-        else:
-            res = possibilities(f, g)
-            storage[key] = res
-        #print(' - ',f, g, res)
-        if res > 0:
-            result += res * possibilities_fast('.'.join(field_l), groups[j:])
-    #print(field, groups, result)
-    return result
-
 def solve(input):
     lines = input.splitlines()
 
@@ -108,15 +82,8 @@ def solve(input):
             if i < 4:
                 field_l += '?'
             groups_l.extend(groups)
-        #p = possibilities('??????????????????????????????????????????????????????????????????????????', [1, 7, 1, 7, 1, 7, 1, 7, 1, 7], 0)
-        #p = possibilities_fast('??#.?????#??????', [1, 1, 1, 1, 6])
-        #print(p)
-        #exit()
-        #field_l = field
-        #groups_l = groups
         print(field_l, groups_l)
-        #p = possibilities(field_l, groups_l)
-        p = possibilities_fast(field_l, groups_l)
+        p = possibilities(field_l, groups_l)
         print(p)
         result += p
 
