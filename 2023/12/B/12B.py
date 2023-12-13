@@ -10,53 +10,51 @@ def is_possible(field, groups):
         return True
     return False
 
-def is_maybe_possible(field, groups):
-    if field.count('#') > sum(groups):
-        return False
-    complete_groups = field[:field.index('?')].replace('.',' ').split()
-    l = len(complete_groups)
-    if (l == 0):
-        return True
-    if (l > len(groups)):
-        return False
-    last_index = l - 1
-    if len(complete_groups[last_index]) > groups[last_index]:
-        return False
-    tmp = complete_groups.pop() # Last cannot be trusted
-    l = len(complete_groups)
-    for i in range(0, l):
-        if len(complete_groups[i]) != groups[i]:
-            return False
-    
-    if len(groups) > l:
-        rest = tmp + '.' + field[field.index('?'):] 
-        remaining_groups = groups[l:]
-        if (sum(remaining_groups) + len(remaining_groups) - 1) > len(rest) :
-            return False 
-    
+def remaining(field, groups):
+    field_first = field
+    field_last = ''
 
-    return True
+    if '?' in field:
+        i = field.index('?')
+        while i > 0 and field[i - 1] == '#':
+            i -= 1
+        field_first = field[:i]
+        field_last = field[i:]
 
-def possibilities(field, groups, start_index = 0):
-    #print(field)
+    h = field_first.replace('.', ' ').split()
+    if len(h) > len(groups):
+        return (None, None) # Invalid
+    for i in range(0, len(h)):
+        if len(h[i]) != groups[i]:
+            return (None, None) # Invalid
+    
+    groups_first = groups[:len(h)]
+    groups_last = groups[len(h):]
+
+    # Validity check - enough space
+    if (sum(groups_last) + len(groups_last) - 1) > len(field_last):
+        return (None, None) # Invalid
+
+    # Validity check - remaining sum
+    if (sum(groups_last) < field_last.count('#')):
+        return (None, None) # Invalid
+
+    return (field_last, groups_last)
+
+def possibilities(field, groups):
     if '?' not in field:
         if is_possible(field, groups):
             return 1
         else:
             return 0
-    if not is_maybe_possible(field, groups):
-        return 0
-    if start_index >= len(field):
+    
+    field, groups = remaining(field, groups)
+    if field == None:
         return 0
 
     count = 0
-    start_index = field.index('?')
-    
-    field_tmp = field.replace('?', '.', 1)
-    count += possibilities(field_tmp, groups, start_index + 1)
-    
-    field_tmp = field.replace('?', '#', 1)
-    count += possibilities(field_tmp, groups, start_index + 1)
+    count += possibilities(field.replace('?','.',1), groups)
+    count += possibilities(field.replace('?','#',1), groups)
 
     return count
 
@@ -105,7 +103,10 @@ def solve(input):
         #p = possibilities_fast('??#.?????#??????', [1, 1, 1, 1, 6])
         #print(p)
         #exit()
+        #field_l = field
+        #groups_l = groups
         print(field_l, groups_l)
+        #p = possibilities(field_l, groups_l)
         p = possibilities_fast(field_l, groups_l)
         print(p)
         result += p
