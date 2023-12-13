@@ -41,6 +41,9 @@ def remaining(field, groups):
 
     return (field_last, groups_last)
 
+# Storage of results key = (field, tuple(groups)) value = count
+storage = {}
+
 def possibilities(field, groups):
     if '?' not in field:
         if is_possible(field, groups):
@@ -48,6 +51,10 @@ def possibilities(field, groups):
         else:
             return 0
     
+    key = (field, tuple(groups))
+    if key in storage:
+        return storage[key]
+
     field, groups = remaining(field, groups)
     if field == None:
         return 0
@@ -56,9 +63,11 @@ def possibilities(field, groups):
     count += possibilities(field.replace('?','.',1), groups)
     count += possibilities(field.replace('?','#',1), groups)
 
+    storage[key] = count
+
     return count
 
-storage = {}
+
 
 def possibilities_fast(field, groups):
     field_l = field.replace('.',' ').split()
