@@ -13,17 +13,30 @@ class Graph(object):
                 nodes.append((row, col))
         return nodes
     
-    def get_outgoing_edges(self, node):
+    def get_outgoing_edges(self, node, previous_nodes):
+        horizontal_allowed = True
+        vertical_allowed = True
+        if node in previous_nodes:
+            prev1 = previous_nodes[node]
+            if prev1 in previous_nodes:
+                prev2 = previous_nodes[prev1]
+                if prev2 in previous_nodes:
+                    prev3 = previous_nodes[prev2]
+                    if node[0] == prev1[0] == prev2[0] == prev3[0]:
+                        vertical_allowed = False
+                    if node[1] == prev1[1] == prev2[1] == prev3[1]:
+                        horizontal_allowed = False
+
         row = node[0]
         col = node[1]
         nodes = []
-        if row > 0:
+        if horizontal_allowed and row > 0:
             nodes.append((row - 1, col))
-        if row < (self.height - 1):
+        if horizontal_allowed and row < (self.height - 1):
             nodes.append((row + 1, col))
-        if col > 0:
+        if vertical_allowed and col > 0:
             nodes.append((row, col - 1))
-        if col < (self.width - 1):
+        if vertical_allowed and col < (self.width - 1):
             nodes.append((row, col + 1))
         return nodes
     
@@ -61,10 +74,8 @@ def dijkstra_algorithm(graph, start_node):
                 
         # The code block below retrieves the current node's neighbors and updates
         # their distances
-        neighbors = graph.get_outgoing_edges(current_min_node)
+        neighbors = graph.get_outgoing_edges(current_min_node, previous_nodes)
         for neighbor in neighbors:
-            # Special case for AoC puzzle - max 3 consecutive in line
-
             tentative_value = shortest_path[current_min_node] + graph.value(current_min_node, neighbor)
             if tentative_value < shortest_path[neighbor]:
                 shortest_path[neighbor] = tentative_value
