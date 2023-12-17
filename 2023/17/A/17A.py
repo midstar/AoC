@@ -1,125 +1,81 @@
 import argparse, time, sys
+from dataclasses import dataclass
+from queue import PriorityQueue
 
-class Graph(object):
-    def __init__(self, matrix):
-        self.matrix = matrix
-        self.height = len(matrix)
-        self.width  = len(matrix[0])
+@dataclass(frozen=True)
+class Pos:
+    row: int
+    col: int
+    def __add__(self, other):
+        return Pos(row=self.row + other.row, col=self.col + other.col)
+    def __sub__(self, other):
+        return Pos(row=self.row - other.row, col=self.col - other.col)
+    def __neg__(self):
+        return Pos(row=-self.row, col=-self.col)
+    def __lt__(self, other):
+        return True
+    def dist(self, other):
+        # manhattan
+        return abs(self.row - other.row) + abs(self.col - other.col)
 
-    def get_nodes(self):
-        nodes = []
-        for row in range(0, len(self.matrix)):
-            for col in range(0, len(self.matrix[row])):
-                nodes.append((row, col))
-        return nodes
-    
-    def get_outgoing_edges(self, node, previous_nodes):
-        horizontal_allowed = True
-        vertical_allowed = True
-        if node in previous_nodes:
-            prev1 = previous_nodes[node]
-            if prev1 in previous_nodes:
-                prev2 = previous_nodes[prev1]
-                if prev2 in previous_nodes:
-                    prev3 = previous_nodes[prev2]
-                    if node[0] == prev1[0] == prev2[0] == prev3[0]:
-                        vertical_allowed = False
-                    if node[1] == prev1[1] == prev2[1] == prev3[1]:
-                        horizontal_allowed = False
+def a_star(grid, start_state, goal_pos, min_chain_before_turn, max_chain):
+    n, m = len(grid), len(grid[0])
 
-        row = node[0]
-        col = node[1]
-        nodes = []
-        if horizontal_allowed and row > 0:
-            nodes.append((row - 1, col))
-        if horizontal_allowed and row < (self.height - 1):
-            nodes.append((row + 1, col))
-        if vertical_allowed and col > 0:
-            nodes.append((row, col - 1))
-        if vertical_allowed and col < (self.width - 1):
-            nodes.append((row, col + 1))
-        return nodes
-    
-    def value(self, from_node, to_node):
-        return int(self.matrix[to_node[0]][to_node[1]])
+    def h(state):
+        # heuristic uses manhattan distance
+        return state[0].dist(goal_pos)
 
+    def get_nbrs(state):
+        pos, direction, chain_length = state
+        for delta in (Pos(1, 0), Pos(0, 1), Pos(-1, 0), Pos(0, -1)):
+            if direction is not None:
+                if delta == -direction:
+                    continue
+                if delta == direction and chain_length == max_chain:
+                    continue
+                if delta not in (-direction, direction) and chain_length < min_chain_before_turn:
+                    continue
+            new_pos = pos + delta
+            if not (0 <= new_pos.row < n and 0 <= new_pos.col < m):
+                continue
+            new_direction = delta
+            if new_direction != direction:
+                new_chain_length = 1
+            else:
+                new_chain_length = chain_length + 1
+            yield new_pos, new_direction, new_chain_length
 
-def dijkstra_algorithm(graph, start_node):
-    unvisited_nodes = graph.get_nodes()
- 
-    # We'll use this dict to save the cost of visiting each node and update it as
-    # we move along the graph   
-    shortest_path = {}
- 
-    # We'll use this dict to save the shortest known path to a node found so far
-    previous_nodes = {}
- 
-    # We'll use max_value to initialize the "infinity" value of the unvisited 
-    # nodes   
-    max_value = sys.maxsize
-    for node in unvisited_nodes:
-        shortest_path[node] = max_value
-    # However, we initialize the starting node's value with 0   
-    shortest_path[start_node] = 0
-    
-    # The algorithm executes until we visit all nodes
-    while unvisited_nodes:
-        # The code block below finds the node with the lowest score
-        current_min_node = None
-        for node in unvisited_nodes: # Iterate over the nodes
-            if current_min_node == None:
-                current_min_node = node
-            elif shortest_path[node] < shortest_path[current_min_node]:
-                current_min_node = node
-                
-        # The code block below retrieves the current node's neighbors and updates
-        # their distances
-        neighbors = graph.get_outgoing_edges(current_min_node, previous_nodes)
-        for neighbor in neighbors:
-            tentative_value = shortest_path[current_min_node] + graph.value(current_min_node, neighbor)
-            if tentative_value < shortest_path[neighbor]:
-                shortest_path[neighbor] = tentative_value
-                # We also update the best path to the current node
-                previous_nodes[neighbor] = current_min_node
- 
-        # After visiting its neighbors, we mark the node as "visited"
-        unvisited_nodes.remove(current_min_node)
-    
-    return previous_nodes, shortest_path
+    q = PriorityQueue()
+    dist = {start_state: 0}
+    q.put((dist[start_state] + h(start_state), start_state))
 
-def get_path(start_node, end_node, previous_nodes):
-    path = []
-    node = end_node
-    while (node != start_node):
-        path.append(node)
-        node = previous_nodes[node]
-    path.append(start_node)
-    path.reverse()
-    return path
-
+    while not q.empty():
+        f_dist, current_state = q.get()
+        if current_state[0] == goal_pos:
+            return dist[current_state]
+        if f_dist > dist[current_state] + h(current_state):
+            continue
+        for nbr_state in get_nbrs(current_state):
+            g_dist = dist[current_state] + grid[nbr_state[0].row][nbr_state[0].col]
+            if nbr_state in dist and dist[nbr_state] <= g_dist:
+                continue
+            dist[nbr_state] = g_dist
+            q.put((dist[nbr_state] + h(nbr_state), nbr_state))
 
 def solve(input):
-    matrix = [list(line) for line in input.splitlines()]
-    graph = Graph(matrix)
-    start_node = (0,0)
-    end_node = (len(matrix) - 1, len(matrix[0]) - 1)
-    previous_nodes, shortest_path = dijkstra_algorithm(graph, start_node)
+    grid = []
+    for line in input.splitlines():
+        grid.append(tuple(map(int, line.strip())))
 
-    
-    path = get_path(start_node, end_node, previous_nodes)
+    n, m = len(grid), len(grid[0])
 
-    print(path)
-    print()
-    for row in range(0, len(matrix)):
-        line = []
-        for col in range(0, len(matrix[row])):
-            if (row, col) in path:
-                line.append('#')
-            else:
-                line.append(matrix[row][col])
-        print(''.join(line))
+    # state described as (position, direction, chain length)
+    start_state = (Pos(0, 0), None, 1)
+    goal_pos = Pos(n-1, m-1)
 
-    return shortest_path[end_node]
+    print(a_star(grid, start_state, goal_pos, 0, 3))
+
+    return 0
     
 
 def main():

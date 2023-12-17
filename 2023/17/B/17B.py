@@ -1,0 +1,125 @@
+import argparse, time, sys, os
+from enum import Enum
+import os, sys
+from queue import PriorityQueue
+import time
+
+class Direction(Enum):
+    UP = (-1, 0)
+    RIGHT = (0, 1)
+    DOWN = (1, 0)
+    LEFT = (0, -1)
+
+class WalkInfo():
+    def __init__(self, cost: int, x: int, y: int, direction: Direction, step_counter: int):
+        self.cost = cost
+        self.x = x
+        self.y = y
+        self.direction = direction
+        self.step_counter = step_counter
+    # most important is cost when dequeueing
+    # as dijkstra needs minimum cost for next step
+    def __lt__(self, other):
+        if self.cost == other.cost:
+            if self.x == other.x:
+                if self.y == other.y:
+                    if self.direction == other.direction:
+                        return self.step_counter < other.step_counter
+                    return self.direction.value < other.direction.value
+                return self.y < other.y
+            return self.x < other.x
+        return self.cost < other.cost
+    # more equality functions as I don't have any idea what PriorityQueue needs
+    def __eq__(self, other):
+        return self.cost == other.cost and self.x == other.x and self.y == other.y and self.direction == other.direction and self.step_counter == other.step_counter
+    def __hash__(self):
+        return hash((self.cost, self.x, self.y, self.direction, self.step_counter))
+    def __gt__(self, other) -> bool:
+        if self.cost == other.cost:
+            if self.x == other.x:
+                if self.y == other.y:
+                    if self.direction == other.direction:
+                        return self.step_counter > other.step_counter
+                    return self.direction.value > other.direction.value
+                return self.y > other.y
+            return self.x > other.x
+        return self.cost > other.cost
+    def __le__(self, other) -> bool:
+        return self < other or self == other
+    def __ge__(self, other) -> bool:
+        return self > other or self == other
+    def __ne__(self, other) -> bool:
+        return not self == other
+    def __str__(self) -> str:
+        return f"({self.cost}, {self.x}, {self.y}, {self.direction}, {self.step_counter})"
+    # for hashing the visited set
+    # no idea why custom class didn't work
+    def get_visited_info(self):
+        return (self.x, self.y, self.direction, self.step_counter)
+
+def dijkstra(graph: list[list[int]], min_steps: int, max_steps: int):
+    queue: PriorityQueue[WalkInfo] = PriorityQueue()
+    # initialize priority queue with the first two directions
+    # step counter is set to 1, as we will take 1 step in that direction
+    queue.put(WalkInfo(0, 0, 0, Direction.RIGHT, 1))
+    queue.put(WalkInfo(0, 0, 0, Direction.DOWN, 1))
+    # tuple for hashing, cost not important here
+    visited: set[tuple[int, int, Direction, int]] = set()
+    
+    while not queue.empty():
+        # get most important cell (lowest cost)
+        curr: WalkInfo = queue.get()
+        # if already seen in this configuration, skip
+        if curr.get_visited_info() in visited:
+            continue
+        visited.add(curr.get_visited_info())
+        #print(curr)
+        # calculate next position
+        new_x = curr.x + curr.direction.value[1]
+        new_y = curr.y + curr.direction.value[0]
+        # if position is outside grid, skip
+        if new_x < 0 or new_x >= len(graph[0]) or new_y < 0 or new_y >= len(graph):
+            continue
+        # new cost
+        new_cost = curr.cost + graph[new_y][new_x]
+        # if we reached the end, and didn't use too many steps or not enough steps, return the cost
+        if min_steps <= curr.step_counter <= max_steps and new_x == len(graph[0]) - 1 and new_y == len(graph) - 1:
+            return new_cost
+        # for each direction
+        for new_direction in Direction:
+            # if the new direction is the opposite of the current direction, skip
+            if new_direction.value[0] + curr.direction.value[0] == 0 and new_direction.value[1] + curr.direction.value[1] == 0:
+                continue
+            # if new direction is the same, increase step counter, otherwise set to 1
+            if new_direction == curr.direction:
+                new_step_counter = curr.step_counter + 1
+            else:
+                new_step_counter = 1
+            # if new step counter is too high, skip
+            # or if we changed direction, but didn't reach the minimum steps, skip
+            if new_step_counter > max_steps or (curr.step_counter < min_steps and new_direction != curr.direction):
+                continue
+            queue.put(WalkInfo(new_cost, new_x, new_y, new_direction, new_step_counter))
+    return -1
+
+def solve(input):
+    grid = [[int(num) for num in line] for line in input.splitlines()]
+
+    print(dijkstra(grid, 4, 10))
+
+    return 0
+    
+
+def main():
+    parser = argparse.ArgumentParser(description='Advent Of Code Solver %s' % __file__)
+    parser.add_argument('input_filename', help='Input', 
+                        nargs='?', default='input.txt')
+    args = vars(parser.parse_args())
+
+    with open(args['input_filename'],'r') as f:
+        start_time = time.time()
+        result = solve(f.read())
+        print('Result: %s  (excution time %0.4f s)' % (result, time.time() - start_time))
+
+if __name__ == '__main__':
+    main()    
