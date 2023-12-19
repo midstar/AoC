@@ -1,82 +1,67 @@
-import argparse, time, sys
-from dataclasses import dataclass
-from queue import PriorityQueue
+import argparse, time
+import heapq
 
-@dataclass(frozen=True)
-class Pos:
-    row: int
-    col: int
-    def __add__(self, other):
-        return Pos(row=self.row + other.row, col=self.col + other.col)
-    def __sub__(self, other):
-        return Pos(row=self.row - other.row, col=self.col - other.col)
-    def __neg__(self):
-        return Pos(row=-self.row, col=-self.col)
-    def __lt__(self, other):
-        return True
-    def dist(self, other):
-        # manhattan
-        return abs(self.row - other.row) + abs(self.col - other.col)
+DIRECTION = {
+    'Up'    : (-1,  0 ),
+    'Down'  : ( 1,  0 ),
+    'Left'  : ( 0, -1 ),
+    'Right' : ( 0,  1 ) 
+}
 
-def a_star(grid, start_state, goal_pos, min_chain_before_turn, max_chain):
-    n, m = len(grid), len(grid[0])
+def goto_node(node, dir):
+    return tuple(map(lambda i, j: i + j, node, DIRECTION[dir]))
 
-    def h(state):
-        # heuristic uses manhattan distance
-        return state[0].dist(goal_pos)
+def dijkstra(grid, max_steps):
+    # Queue items (total heat in path, (row, col), direction, number of "straight" steps)
+    queue = []
+    heapq.heappush(queue, (grid[(0,1)], (0,1), 'Right', 1, ((0,0),)))
+    heapq.heappush(queue, (grid[(1,0)], (1,0), 'Down', 1,  ((0,0),)))
 
-    def get_nbrs(state):
-        pos, direction, chain_length = state
-        for delta in (Pos(1, 0), Pos(0, 1), Pos(-1, 0), Pos(0, -1)):
-            if direction is not None:
-                if delta == -direction:
-                    continue
-                if delta == direction and chain_length == max_chain:
-                    continue
-                if delta not in (-direction, direction) and chain_length < min_chain_before_turn:
-                    continue
-            new_pos = pos + delta
-            if not (0 <= new_pos.row < n and 0 <= new_pos.col < m):
-                continue
-            new_direction = delta
-            if new_direction != direction:
-                new_chain_length = 1
-            else:
-                new_chain_length = chain_length + 1
-            yield new_pos, new_direction, new_chain_length
+    end_node = max(grid)
+    visited = set()
 
-    q = PriorityQueue()
-    dist = {start_state: 0}
-    q.put((dist[start_state] + h(start_state), start_state))
+    while queue:
+        node_metadata = heapq.heappop(queue)
+        #print(*node_metadata)
+        heat, node, dir, steps, path = node_metadata
+        if node == end_node:
+            return heat, path
 
-    while not q.empty():
-        f_dist, current_state = q.get()
-        if current_state[0] == goal_pos:
-            return dist[current_state]
-        if f_dist > dist[current_state] + h(current_state):
+
+        if (heat, node, dir, steps) in visited:
             continue
-        for nbr_state in get_nbrs(current_state):
-            g_dist = dist[current_state] + grid[nbr_state[0].row][nbr_state[0].col]
-            if nbr_state in dist and dist[nbr_state] <= g_dist:
-                continue
-            dist[nbr_state] = g_dist
-            q.put((dist[nbr_state] + h(nbr_state), nbr_state))
+        visited.add((heat, node, dir, steps))
+        '''
+        if node_metadata in visited:
+            continue
+        visited.add(node_metadata)
+        '''
+        directions = []
+        if steps < max_steps:
+            directions.append(dir)
+        if dir in ['Up', 'Down']:
+            directions.append('Left')
+            directions.append('Right')
+        if dir in ['Left', 'Right']:
+            directions.append('Up')
+            directions.append('Down')
+        for direction in directions:
+            next_node = goto_node(node, direction)
+            if next_node in grid:
+                next_step = 0 if direction != dir else steps + 1
+                next_path = path + (node,)
+                heapq.heappush(queue, (heat + grid[next_node], next_node, direction, next_step, next_path))
+
 
 def solve(input):
-    grid = []
-    for line in input.splitlines():
-        grid.append(tuple(map(int, line.strip())))
+    grid = {}
+    for row, lines in enumerate(input.splitlines()):
+        for col, heat in enumerate(lines):
+            grid[(row, col)] = int(heat)
 
-    n, m = len(grid), len(grid[0])
-
-    # state described as (position, direction, chain length)
-    start_state = (Pos(0, 0), None, 1)
-    goal_pos = Pos(n-1, m-1)
-
-    print(a_star(grid, start_state, goal_pos, 0, 3))
-
-    return 0
-    
+    result, path = dijkstra(grid, 3)
+    print(path)
+    return result 
 
 def main():
     parser = argparse.ArgumentParser(description='Advent Of Code Solver %s' % __file__)

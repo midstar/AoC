@@ -16,6 +16,7 @@ class Graph(object):
     def get_outgoing_edges(self, node, previous_nodes):
         horizontal_allowed = True
         vertical_allowed = True
+        
         if node in previous_nodes:
             prev1 = previous_nodes[node]
             if prev1 in previous_nodes:
@@ -26,6 +27,7 @@ class Graph(object):
                         vertical_allowed = False
                     if node[1] == prev1[1] == prev2[1] == prev3[1]:
                         horizontal_allowed = False
+        
 
         row = node[0]
         col = node[1]
