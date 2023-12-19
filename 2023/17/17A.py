@@ -12,7 +12,7 @@ def goto_node(node, dir):
     return tuple(map(lambda i, j: i + j, node, DIRECTION[dir]))
 
 def dijkstra(grid, max_steps):
-    # Queue items (total heat in path, (row, col), direction, number of "straight" steps)
+    # Queue items (total heat in path, (row, col), direction, number of "straight" steps , path)
     queue = []
     heapq.heappush(queue, (grid[(0,1)], (0,1), 'Right', 1, ((0,0),)))
     heapq.heappush(queue, (grid[(1,0)], (1,0), 'Down', 1,  ((0,0),)))
@@ -27,17 +27,11 @@ def dijkstra(grid, max_steps):
         if node == end_node:
             return heat, path
 
-
-        if (heat, node, dir, steps) in visited:
+        if (node, dir, steps) in visited:
             continue
-        visited.add((heat, node, dir, steps))
-        '''
-        if node_metadata in visited:
-            continue
-        visited.add(node_metadata)
-        '''
+        visited.add((node, dir, steps))
         directions = []
-        if steps < max_steps:
+        if steps < (max_steps - 1):
             directions.append(dir)
         if dir in ['Up', 'Down']:
             directions.append('Left')
@@ -60,7 +54,18 @@ def solve(input):
             grid[(row, col)] = int(heat)
 
     result, path = dijkstra(grid, 3)
+
+    '''
     print(path)
+    for row, lines in enumerate(input.splitlines()):
+        line = []
+        for col, heat in enumerate(lines):
+            if (row, col) in path:
+                line.append('#')
+            else: 
+                line.append(str(heat))
+        print(''.join(line))
+    '''
     return result 
 
 def main():
