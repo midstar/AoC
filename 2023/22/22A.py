@@ -16,7 +16,7 @@ def place_brick(field, brick):
         if z_high >= z_level:
             z_level = z_high + 1
 
-    # Place brick on field on z_evel
+    # Place brick on field on z_level
     for (x,y,z) in brick:
         field.append((x,y,z + z_level))
 
@@ -31,13 +31,17 @@ def create_field(bricks, skip = -1):
     return field, bricks_z
 
 def compare(line1, line2):
-    z = [0, 0]
+    z_min = [0, 0]
+    z_max = [0, 0]
     for i, line in enumerate([line1, line2]):
         A_B = line.split('~')
         A_Z = [int(c) for c in A_B[0].split(',')][2]
         B_Z = [int(c) for c in A_B[1].split(',')][2]
-        z[i] = min(A_Z, B_Z)
-    return z[0] - z[1]
+        z_min[i] = min(A_Z, B_Z)
+        z_max[i] = max(A_Z, B_Z)
+    if z_min[0] != z_min[1]:
+        return z_min[0] - z_min[1]
+    return z_max[0] - z_max[1]
 
 
 def solve(input):
@@ -45,7 +49,7 @@ def solve(input):
     # Sort based on z
     compare_key = cmp_to_key(compare)
     lines = sorted(lines, key=compare_key)
-
+    print('\n'.join(lines))
     bricks = []
     for line in lines:
         A_B = line.split('~')
@@ -76,8 +80,7 @@ def solve(input):
             nodes.append((nl[0], nl[1], nl[2] - z_offset))
         bricks.append(nodes)
 
-    _, bricks_z = create_field(bricks)
-    #print(bricks_z)
+    field, bricks_z = create_field(bricks)
 
     result = 0
     percent = max(int(len(bricks)/100),1)
