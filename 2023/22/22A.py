@@ -1,35 +1,6 @@
 import argparse, time
 from functools import cmp_to_key
 
-def high_z(x, y, coordinates):
-    high_z = 0
-    for (a,b,c) in coordinates:
-        if a == x and b == y and high_z < c:
-            high_z = c
-    return high_z
-
-def place_brick(field, brick):
-    # Find z level for brick
-    z_level = 1
-    for (x,y,z) in brick:
-        z_high = high_z(x, y, field)
-        if z_high >= z_level:
-            z_level = z_high + 1
-
-    # Place brick on field on z_level
-    for (x,y,z) in brick:
-        field.append((x,y,z + z_level))
-
-    return z_level
-
-def create_field(bricks, skip = -1):
-    field = []
-    bricks_z = [0 for _ in range(0, len(bricks))]
-    for index, brick in enumerate(bricks):
-        if skip != index:
-            bricks_z[index] = place_brick(field, brick)
-    return field, bricks_z
-
 def compare(line1, line2):
     z_min = [0, 0]
     z_max = [0, 0]
@@ -43,15 +14,49 @@ def compare(line1, line2):
         return z_min[0] - z_min[1]
     return z_max[0] - z_max[1]
 
+def remove_brick(space, bricks, index):
+    for coord in bricks[index]:
+        if coord not in space:
+            print(f'Error! Brick {index} coord {coord} free')
+            exit(1)
+        del space[coord]
+
+def add_brick(space, bricks, index):
+    for coord in bricks[index]:
+        if coord in space:
+            print(f'Error! Brick {index} coord {coord} not free')
+            exit(1)
+        space[coord] = index
+
+def free_z_below(space, bricks, index):
+    brick = bricks[index]
+    z_down = brick[0][2]
+    free_z = 10000000
+    for (_, _, z) in brick:
+        z_down = z if z < z_down else z_down
+    for (x, y, z) in brick:
+        if z != z_down: continue
+        z_offset = 0
+        while((z - z_offset) > 1):
+            z_offset += 1
+            if (x, y, z - z_offset) in space:
+                z_offset -= 1
+                break
+        free_z = min(z_offset, free_z)
+        
+    return free_z
+
 
 def solve(input):
     lines = input.splitlines()
+
     # Sort based on z
     compare_key = cmp_to_key(compare)
     lines = sorted(lines, key=compare_key)
-    print('\n'.join(lines))
+
+    # Create bricks
     bricks = []
-    for line in lines:
+    for i, line in enumerate(lines):
         A_B = line.split('~')
         A = [int(c) for c in A_B[0].split(',')]
         B = [int(c) for c in A_B[1].split(',')]
@@ -61,42 +66,55 @@ def solve(input):
         axis = 0
         xyz = [0,1,2]
         for i in xyz:
-            size = A[i] - B[i]
-            if size != 0:
+            diff = A[i] - B[i]
+            if diff != 0:
                 axis = i
-                if size > 0:
+                if diff > 0:
                     base = B
-                size = abs(size) + 1
+                size = abs(diff) + 1
                 break
-        nodes = []
-        nl = [0,0,0]
-        z_offset = 100000000
-        for i in xyz:
-            nl[i] = base[i]
-            if z_offset > base[2]:
-                z_offset = base[2] 
+
+        coords = []
         for v in range(base[axis], base[axis] + size):
-            nl[axis] = v
-            nodes.append((nl[0], nl[1], nl[2] - z_offset))
-        bricks.append(nodes)
+            base[axis] = v
+            coords.append((base[0], base[1], base[2]))
+        if len(coords) == 0:
+            print('Error', line, A, B, base, size)
+            exit()
+        bricks.append(coords)
 
-    field, bricks_z = create_field(bricks)
+    # Add bricks to space
+    space = {}
+    for i in range(len(bricks)):
+        add_brick(space, bricks, i)
 
+    # Drop bricks one-by-one
+    moved = True
+    while(moved):
+        moved = False
+        for i in range(len(bricks)):
+            z_offset = free_z_below(space, bricks, i)
+            if z_offset > 0:
+                moved = True
+                remove_brick(space, bricks, i)
+                new_coords = []
+                for (x, y, z) in bricks[i]:
+                    new_coords.append((x, y, z - z_offset))
+                bricks[i] = new_coords
+                add_brick(space, bricks, i)    
+
+    # Test remove one-by-one
     result = 0
-    percent = max(int(len(bricks)/100),1)
-    for skip_i in range(0, len(bricks)):
-        if skip_i % percent == 0:
-            print(skip_i / percent, '%')
-        _, bricks_z2 = create_field(bricks, skip_i)
-        falling = False
-        for i in range(0, len(bricks_z)):
-            if i != skip_i:
-                if bricks_z[i] != bricks_z2[i]:
-                    falling = True
-                    break
-        if not falling:
-            result += 1
-        #print(skip_i, bricks_z2, falling)
+    for i in range(len(bricks)):
+        movable = True
+        remove_brick(space, bricks, i)
+        for j in range(len(bricks)):
+            if j != i:
+                if free_z_below(space, bricks, j) != 0:
+                    movable = False   
+                    break   
+        add_brick(space, bricks, i) 
+        if movable: result += 1
 
     return result
 
