@@ -15,11 +15,8 @@ def follow(head, tail):
     dc = head[1] - tail[1]
     if abs(dr) <= 1 and abs(dc) <= 1:
         return tail # No move
-    dr_n, dc_n = (0,0)
-    if dc != 0:
-        dc_n = 1 if dc > 0 else -1
-    if dr != 0:
-        dr_n = 1 if dr > 0 else -1
+    dc_n = 1 if dc > 0 else -1 if dc < 0 else 0
+    dr_n = 1 if dr > 0 else -1 if dr < 0 else 0
 
     return (tail[0] + dr_n, tail[1] + dc_n)
 
