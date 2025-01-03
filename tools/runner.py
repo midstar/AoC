@@ -7,13 +7,32 @@ def run(full_path):
     name_path = os.path.join(path,name)
     input_path = os.path.join(path,'input',f'{filename[:2]}.txt')
 
+    answer = ''
+    answer_path = os.path.join(path,'input',f'{filename[:3]}_answer.txt')
+    if os.path.isfile(answer_path):
+        answer = open(answer_path).read()
+
     sys.path.append(path)
     puzzle = __import__(name)
     
     print(f'{name_path}',end='',flush=True)
     start_time = time.time()
     result = puzzle.solve(open(input_path).read())
-    print(f' Result: {result} (execution time {time.time() - start_time:.4f} s)')
+    execution_time = time.time() - start_time
+
+    correct = ''
+    if answer == '':
+        res = '?   '
+    elif answer.strip() == str(result):
+        res = 'PASS'
+    else:
+        correct = f' (correct {answer.strip()})'
+        res = 'FAIL'
+
+    minutes = int(execution_time) // 60
+    seconds = execution_time - minutes * 60
+
+    print(f'  {minutes:02} m {seconds:06.3f} s  {res}  {result}{correct}')
 
 def run_dir(path):
     for root, _, files in os.walk(path, topdown=True):

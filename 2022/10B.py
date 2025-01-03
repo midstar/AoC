@@ -23,14 +23,13 @@ def solve(input):
             x += int(line.split()[1])
         else:
             cycle = next_cycle(pixels, x, cycle)
-        
-    #for i, c in enumerate(pixels):
-    #    print(c, end='')
-    #    if i > 0 and (i + 1) % width == 0:
-    #        print()
-    #print()
+    print()    
+    for i, c in enumerate(pixels):
+        print(c, end='')
+        if i > 0 and (i + 1) % width == 0:
+            print()
             
-    return 0
+    return 'Check prints'
         
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
