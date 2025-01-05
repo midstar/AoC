@@ -19,28 +19,47 @@ NEXT = {
     'R' : [('R',1),('U',1001),('D',1001)]
 }
 
+def full_path(path, visited):
+    result = path.copy()
+    for p_d in path:
+        if p_d in visited:
+            result |= visited[p_d]['path']
+    new_paths = result - path
+    if new_paths:
+        result |= full_path(new_paths, visited)
+    return result
+
 def run(grid,start,end,dir):
     q = []
-    heapq.heappush(q, (0, start, dir, {start}))
+    heapq.heappush(q, (0, start, dir, {(start,dir)}))
+
     visited = {}
-    best_path = set()
+    best_pos = set()
     best_path_points = 10000000000000
+
     while q:
         points, pos, dir, path = heapq.heappop(q)
-        if (pos, dir) in visited and points > visited[(pos, dir)]:
-            continue
-        visited[(pos, dir)] = points
+
+        if points > best_path_points: break
+
         if pos == end:
-            if points <= best_path_points:
-                best_path_points = points
-                best_path = best_path | path
-            else:
-                return len(best_path)
+            best_path_points = points
+            best_pos |= {pos for pos, _ in full_path(path, visited)}
+            continue
+
+        if (pos, dir) not in visited:
+            visited[(pos, dir)] = {'points':points,'path':path}
+        else:
+            if points <= visited[(pos, dir)]['points']:
+                visited[(pos, dir)]['path'] |= path
+            continue
 
         for dir2, points2 in NEXT[dir]:
             pos2 = get_new_pos(pos,dir2)
             if pos2 in grid:
-                heapq.heappush(q, (points + points2, pos2, dir2, path | {pos2}))
+                heapq.heappush(q, (points + points2, pos2, dir2, path | {(pos2,dir2)}))
+
+    return len(best_pos)
 
 def solve(input):
     grid = set()
