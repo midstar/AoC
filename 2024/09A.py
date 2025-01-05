@@ -12,10 +12,17 @@ def solve(input):
         for _ in range(l):
             fs.append(val)
 
-    while fs.count(-1) > 0:
-        last = fs.pop()
-        if last != -1:
-            fs[fs.index(-1)] = last
+    ei = len(fs) - 1
+    for i in range(len(fs)):
+        if i >= ei:
+            fs = fs[:ei + 1]
+            break
+        if fs[i] == -1:
+            while fs[ei] == -1 and ei > i:
+                ei -= 1
+            if ei > i:
+                fs[i] = fs[ei]
+                ei -= 1
 
     return sum([i * id for i, id in enumerate(fs)])
         
