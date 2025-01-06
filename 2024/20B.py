@@ -46,14 +46,14 @@ def solve(input):
     orig_path_l = len(orig_path)
 
     result = 0
-    for i, pos in enumerate(orig_path[:-1]):
-        for j, pos2 in enumerate(orig_path[i+1:]):
+    for i, pos in enumerate(orig_path[:-100]):
+        for j, pos2 in enumerate(orig_path[i+100:]):
             r1, c1 = pos
             r2, c2 = pos2
             # Steps between pos and pos2
             steps = abs(r1 - r2) + abs(c1 - c2)
             if steps <= 20:
-                new_l = (steps - 1) + (i+1) + len(orig_path[i+1+j:])
+                new_l = (steps - 1) + (i+1) + len(orig_path[i+100+j:])
                 if new_l < orig_path_l:
                     saved = orig_path_l - new_l
                     if saved >= 100:
