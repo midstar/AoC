@@ -10,16 +10,14 @@ DIR = {
 def get_new_pos(pos, dir):
     return (pos[0] + DIR[dir][0], pos[1] + DIR[dir][1])
 
-def run(grid,start,end, start_path=[], orig_path=[]):
-    q = [(start,start_path)]
-    visited = set(start_path[:-1])
+def run(grid,start,end):
+    q = [(start,[start])]
+    visited = set()
     while q:
         pos, path = q.pop(0)
         if pos in visited:
             continue
         visited.add(pos)
-        if pos not in start_path and pos in orig_path:
-            return path + orig_path[orig_path.index(pos) + 1:]
         if pos == end:
             return path
         for dir in DIR.keys():
@@ -44,23 +42,20 @@ def solve(input):
                 end = (r,c)
                 grid[(r,c)] = '.'
 
-    orig_path = run(grid,start,end,[start])
-    
-    cheat_stones = set()
+    orig_path = run(grid,start,end)
+    orig_path_l = len(orig_path)
+
     result = 0
-    for i, pos in enumerate(orig_path):
-        for dir in DIR.keys():
-            pos2 = get_new_pos(pos, dir)
-            if pos2 in grid and grid[pos2] == '#' and grid[pos2] not in cheat_stones:
-                cheat_stones.add(pos2)
-                grid[pos2] = '.'
-                cheat_path = run(grid,pos2,end,orig_path[:i+1] + [pos2], orig_path)
-                grid[pos2] = '#'
-                if cheat_path != None and (len(orig_path) - len(cheat_path)) >= 100 :
-                    result += 1
-                    #print(pos2, len(cheat_path), len(orig_path) - len(cheat_path))
-
-
+    for i, pos in enumerate(orig_path[:-2]):
+        for j, pos2 in enumerate(orig_path[i+2:]):
+            r1, c1 = pos
+            r2, c2 = pos2
+            # Steps between pos and pos2
+            steps = abs(r1 - r2) + abs(c1 - c2)
+            if steps <= 2:
+                new_l = steps + orig_path_l - 2 - j
+                if (orig_path_l - new_l) >= 100:
+                    result +=1
 
     return result
         
