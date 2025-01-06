@@ -22,7 +22,7 @@ def run(grid,start,end):
             return path
         for dir in DIR.keys():
             pos2 = get_new_pos(pos, dir)
-            if (pos2 in grid) and (pos2 not in path) and (grid[pos2] == '.'):
+            if (pos2 in grid) and (grid[pos2] == '.'):
                 q.append((pos2, path + [pos2]))
     return None
 
