@@ -29,7 +29,7 @@ def run(grid, max):
                     q.append((pos2,steps + 1))
 
 def solve(input):
-    grid = [(int(l.split(',')[0]),int(l.split(',')[1])) for l in input.splitlines()]
+    grid = [tuple(map(int,l.split(','))) for l in input.splitlines()]
 
     max = 70
     fallen_bytes = 1024
@@ -37,7 +37,7 @@ def solve(input):
     #Example
     #max = 6
     #fallen_bytes = 12
-    return run(grid[:fallen_bytes], max)
+    return run(set(grid[:fallen_bytes]), max)
         
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))

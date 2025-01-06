@@ -30,7 +30,7 @@ def run(grid, max):
     return None
 
 def solve(input):
-    grid = [(int(l.split(',')[0]),int(l.split(',')[1])) for l in input.splitlines()]
+    grid = [tuple(map(int,l.split(','))) for l in input.splitlines()]
 
     max = 70
     fallen_bytes = 1024
@@ -40,10 +40,9 @@ def solve(input):
     #fallen_bytes = 12
     path = None
     for f in range(fallen_bytes, len(grid)):
-        if path != None:
-            if not any(v in grid[:f] for v in path):
+        if path != None and grid[f - 1] not in path:
                 continue
-        path = run(grid[:f], max)
+        path = run(set(grid[:f]), max)
         if path == None:
             x, y = grid[f - 1]
             return f'{x},{y}'
