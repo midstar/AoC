@@ -53,11 +53,9 @@ def solve(input):
             # Steps between pos and pos2
             steps = abs(r1 - r2) + abs(c1 - c2)
             if steps <= 20:
-                new_l = (steps - 1) + (i+1) + len(orig_path[i+100+j:])
-                if new_l < orig_path_l:
-                    saved = orig_path_l - new_l
-                    if saved >= 100:
-                        result +=1
+                new_l = steps + orig_path_l - 100 - j
+                if (orig_path_l - new_l) >= 100:
+                    result +=1
 
     return result
         
