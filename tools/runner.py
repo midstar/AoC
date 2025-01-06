@@ -33,6 +33,8 @@ def run(full_path):
     seconds = execution_time - minutes * 60
 
     print(f'  {minutes:02} m {seconds:06.3f} s  {res}  {result}{correct}')
+    
+    del puzzle # clean-up
 
 def run_dir(path):
     for root, _, files in os.walk(path, topdown=True):

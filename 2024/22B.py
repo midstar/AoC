@@ -1,8 +1,6 @@
 import sys
 import sys
-from functools import cache
 
-@cache
 def next_sec_num(sec_num):
     sec_num = (sec_num ^ (sec_num * 64)) % 16777216
     sec_num = (sec_num ^ int(sec_num / 32)) % 16777216
