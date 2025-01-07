@@ -1,6 +1,12 @@
 # Script to run one or multiple puzzles
 import argparse, time, sys, os
 
+def time_str(execution_time):
+    minutes = int(execution_time) // 60
+    seconds = execution_time - minutes * 60
+
+    return f'  {minutes:02} m {seconds:06.3f} s'
+
 def run(full_path):
     path, filename = os.path.split(full_path)
     name = os.path.splitext(filename)[0]
@@ -29,18 +35,25 @@ def run(full_path):
         correct = f' (correct {answer.strip()})'
         res = 'FAIL'
 
-    minutes = int(execution_time) // 60
-    seconds = execution_time - minutes * 60
-
-    print(f'  {minutes:02} m {seconds:06.3f} s  {res}  {result}{correct}')
+    print(f'  {time_str(execution_time)} {res}  {result}{correct}')
     
     del puzzle # clean-up
 
+    return res
+
 def run_dir(path):
+    result = []
+    start_time = time.time()
+
     for root, _, files in os.walk(path, topdown=True):
         for file in sorted(files):
             if os.path.splitext(file)[1] == '.py' and file[:2].isnumeric():
-                run(os.path.join(root,file))
+                result.append(run(os.path.join(root,file)))
+    
+    execution_time = time.time() - start_time
+    print()
+    print(f'Total:  {time_str(execution_time)}  PASS: {result.count("PASS")}  FAIL: {result.count("FAIL")}  ?: {result.count("?   ")}')
+
 
 def main():
     parser = argparse.ArgumentParser(description=f'Advent Of Code Runner')
