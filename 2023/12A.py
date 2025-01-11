@@ -10,29 +10,62 @@ def is_possible(field, groups):
         return True
     return False
 
-def possibilities(field, groups, start_index = 0):
+def remaining(field, groups):
+    field_first = field
+    field_last = ''
+
+    if '?' in field:
+        i = field.index('?')
+        while i > 0 and field[i - 1] == '#':
+            i -= 1
+        field_first = field[:i]
+        field_last = field[i:]
+
+    h = field_first.replace('.', ' ').split()
+    if len(h) > len(groups):
+        return (None, None) # Invalid
+    for i in range(0, len(h)):
+        if len(h[i]) != groups[i]:
+            return (None, None) # Invalid
+    
+    groups_first = groups[:len(h)]
+    groups_last = groups[len(h):]
+
+    # Validity check - enough space
+    if (sum(groups_last) + len(groups_last) - 1) > len(field_last):
+        return (None, None) # Invalid
+
+    # Validity check - remaining sum
+    if (sum(groups_last) < field_last.count('#')):
+        return (None, None) # Invalid
+
+    return (field_last, groups_last)
+
+# Storage of results key = (field, tuple(groups)) value = count
+storage = {}
+
+def possibilities(field, groups):
     if '?' not in field:
         if is_possible(field, groups):
             return 1
         else:
             return 0
-    if field.count('#') > sum(groups):
-        return 0
-    if start_index >= len(field):
+    
+    key = (field, tuple(groups))
+    if key in storage:
+        return storage[key]
+
+    field, groups = remaining(field, groups)
+    if field == None:
         return 0
 
     count = 0
-    start_index = field.index('?')
-    
-    field_tmp = field.replace('?', '.', 1)
-    count += possibilities(field_tmp, groups, start_index + 1)
-    
-    field_tmp = field.replace('?', '#', 1)
-    count += possibilities(field_tmp, groups, start_index + 1)
+    count += possibilities(field.replace('?','.',1), groups)
+    count += possibilities(field.replace('?','#',1), groups)
+
+    storage[key] = count
 
     return count
-
-
 
 
 def solve(input):
@@ -43,7 +76,7 @@ def solve(input):
         field = line.split()[0]
         groups = line.split()[1].split(',')
         groups = [int(i) for i in groups]
-        p = possibilities(field, groups, 0)
+        p = possibilities(field, groups)
         result += p
         #print('--------------', field, groups, p)
 
