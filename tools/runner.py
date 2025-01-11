@@ -78,7 +78,7 @@ def run(full_path):
         correct = f' (correct {answer.strip()})'
         res = 'FAIL'
 
-    print(f'  {time_str(execution_time)} {res}  {result}{correct}')
+    print(f'  {time_str(execution_time)}  {res}  {result}{correct}')
 
     return res
 
