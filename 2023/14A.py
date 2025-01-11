@@ -1,21 +1,16 @@
 import sys
 
 def tilt(pattern):
-    for row in range(0, len(pattern)):
-        changed = True
-        while changed:
-            changed = False
-            rock_col = -1
-            for col in range (0, len(pattern[row])):
-                if pattern[row][col] == 'O':
-                    rock_col = col
-                elif pattern[row][col] == '#':
-                    rock_col = -1
-                elif pattern[row][col] == '.' and rock_col != -1:
-                    pattern[row][col] = 'O'
-                    pattern[row][rock_col] = '.'
-                    rock_col = col
-                    changed = True
+    for row in range(len(pattern)):
+        for col in reversed(range(len(pattern[row]))):
+            if pattern[row][col] == '.':
+                col2 = col - 1
+                while col2 >= 0 and pattern[row][col2] != '#':
+                    if pattern[row][col2] == 'O':
+                        pattern[row][col]  = 'O' 
+                        pattern[row][col2] = '.'
+                        break
+                    col2 -= 1
     return pattern
 
 def transpose(pattern):
