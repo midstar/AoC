@@ -9,15 +9,7 @@ def hash(input):
     return h
 
 def solve(input):
-    #lines = input.splitlines()
-    #matrix = [list(line) for line in lines]
-    result = 0
-
-    words = input.split(',')
-    for word in words:
-        result += hash(word)
-
-    return result
+    return sum([hash(word) for word in input.strip().split(',')])
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
