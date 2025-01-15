@@ -32,14 +32,14 @@ def bfs(grid, start, steps):
 
 
 def solve(input):
-    grid = []
+    grid = set()
     start = None
     for row, line in enumerate(input.splitlines()):
         for col, c in enumerate(line):
             if c == '#':
                 continue
             node = (row, col)
-            grid.append(node)
+            grid.add(node)
             if c == 'S':
                 start = node
 

@@ -58,7 +58,7 @@ def func(x, a, b, c):
     return a*x**2 + b * x + c
 
 def solve(input):
-    grid = []
+    grid = set()
     start = None
     lines = input.splitlines()
     height = len(lines)
@@ -69,7 +69,7 @@ def solve(input):
             if c == '#':
                 continue
             node = (row, col)
-            grid.append(node)
+            grid.add(node)
             if c == 'S':
                 start = node
 
