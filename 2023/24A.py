@@ -27,7 +27,7 @@ def get_coords(xy, speed): # z ignored
     elif ty[0] > tx[0] and ty[0] < tx[1]:
         t.append(ty[0])
     else:
-        print('Impossible coord pos 1: ', tx, ty, xy)
+        #print('Impossible coord pos 1: ', tx, ty, xy)
         return None, None
     t[0] = max(0, t[0])
 
@@ -37,7 +37,7 @@ def get_coords(xy, speed): # z ignored
         t.append(ty[1])
 
     if len(t) != 2 or t[1] < 0: 
-        print('Impossible coord pos 2: ', tx, ty, xy)
+        #print('Impossible coord pos 2: ', tx, ty, xy)
         return None, None
     return ((xy[0] + speed[0] * t[0], xy[1] + speed[1] * t[0]), \
             (xy[0] + speed[0] * t[1], xy[1] + speed[1] * t[1]))
