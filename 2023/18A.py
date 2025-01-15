@@ -7,76 +7,46 @@ DIRECTION = {
     'R' : ( 0,  1 ) 
 }
 
-def get_node(node, dir):
-    return tuple(map(lambda i, j: i + j, node, DIRECTION[dir]))
+def get_node(node, dir, steps):
+    dr, dc = DIRECTION[dir]
+    return (node[0] + dr * steps, node[1] + dc * steps)
 
 def solve(input):
-    row_min = 0
-    row_max = 0
-    col_min = 0
-    col_max = 0
-    last_node = (0, 0)
-    dig_nodes = [last_node]
+    node = (0,0)
+    nodes = [node]
+    steps_tot = 0
     for line in input.splitlines():
         dir = line.split()[0]
-        len = int(line.split()[1])
-        for i in range(0, len):
-            next = get_node(last_node, dir)
-            dig_nodes.append(next)
-            last_node = next
-            row, col = last_node
-            row_min = min(row_min, row)
-            row_max = max(row_max, row)
-            col_min = min(col_min, col)
-            col_max = max(col_max, col)
+        steps = int(line.split()[1])
+        node = get_node(node, dir, steps)
+        nodes.append(node)
+        steps_tot += steps
 
-    height = 1 + row_max - row_min
-    width = 1 + col_max - col_min
-    
-    grid = {}
-    for row, col in dig_nodes:
-        grid[(row - row_min, col - col_min)] = '#'
+    # Calculate polygon area using Shoelace Formula (Triangle formula)
+    area = 0
+    for i in range(0, len(nodes) - 1):
+        node_a = nodes[i]
+        node_b = nodes[i+1]
+        area += 0.5 * (node_a[0] * node_b[1] - node_b[0] * node_a[1])
+    area = abs(area)
 
-    for row in range(0, height):
-        for col in range(0, width):
-            node = (row, col)
-            if node not in grid:
-                grid[node] = ''
-
-    found_row = True
-    while(found_row):
-        found_row = False
-        for row in range(0, height):
-            found_col = True
-            while(found_col):
-                found_col = False
-                for col in range(0, width):
-                    node = (row, col)
-                    if grid[node] == '':
-                        if row == 0 or (row == height - 1) or col == 0 or (col == width - 1):
-                            grid[node] = '.'
-                            found_col = True
-                        else:
-                            if grid[(row - 1, col)] == '.' or grid[(row + 1, col)] == '.' or \
-                            grid[(row, col - 1)] == '.' or grid[(row, col + 1)] == '.' :
-                                grid[node] = '.'
-                                found_col = True
-                if found_col:
-                    found_row = True
-
-    result = 0
-    for node, val in grid.items():
-        if val == '' or val == '#':
-            result += 1
-
-    #print(grid)
-    #print()
-    #print(height, width)
-
-
-
-
-    return result
+    # The problem with the area above is that includes only half of
+    # the border. Draw a rectancle with corners 0,0 0,3 3,3 and 3,0
+    # on a checkered paper you will se that the left and bottom 
+    # border are within the area and top and right border are outside 
+    # the area. Shoelace Formula will give area 9 but with the border
+    # (count squares on paper) the area is 9 + 7 = 16. 
+    #
+    # You kan use Pick's Theorem to calculate the inner are as:
+    #
+    # A = i + b/2 - 1  => i = A - b/2 + 1
+    #
+    # A is the area we calculated above (area variable)
+    #
+    # The area with border (AB) is AB = i + b
+    #
+    # Replace i and get AB = (A - b/2 + 1) + b = A + b/2 + 1
+    return int(area + steps_tot / 2 + 1)
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))

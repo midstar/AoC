@@ -1,5 +1,4 @@
 import sys
-import sys
 
 DIRECTION = {
     '0' : ( 0,  1 ), # R
@@ -47,9 +46,7 @@ def solve(input):
     # The area with border (AB) is AB = i + b
     #
     # Replace i and get AB = (A - b/2 + 1) + b = A + b/2 + 1
-    result = int(area + steps_tot / 2 + 1)
-
-    return result
+    return int(area + steps_tot / 2 + 1)
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
