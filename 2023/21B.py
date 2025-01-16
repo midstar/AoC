@@ -1,6 +1,7 @@
 import sys
 import matplotlib.pyplot as plt 
 from scipy.optimize import curve_fit
+import warnings
 
 DIRECTION = {
     'R' : ( 0,  1 ), 
@@ -81,25 +82,14 @@ def solve(input):
     # horizontally
     input = [int(width / 2) + i * width for i in range(0,3)]
     nodes = bfs(grid, height, width, start, input)
-    #for i in range(0, len(nodes)):
-    #    print(input[i],nodes[i])
-
     count = [cl for cl in nodes]
 
+    warnings.filterwarnings('ignore') # Supress OptimizeWarning
     params, covs = curve_fit(func, input, count)
-    #print('params', params)
-    #print('covs', covs)
     a, b, c = params
-    for i in range(0, len(nodes)):
-        x = input[i]
-        calc_y = func(input[i], a, b, c)
-        #print('x:', input[i], '  y meas:', nodes[i], '  y calc:', calc_y) 
 
-    #plt.plot(input, count)  # Plot the chart 
-    #plt.show()  # display 
     x = 26501365
-    result = func(x, a, b, c)
-    return round(result)
+    return round(func(x, a, b, c))
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
