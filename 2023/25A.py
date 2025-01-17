@@ -58,7 +58,7 @@ def solve(input):
             for node2 in node_list:
                 path = bfs(nodes, node, node2)
                 if not path:
-                    print('No route ', node, '-', node2)
+                    #print('No route ', node, '-', node2)
                     all_routes_exists = False
                     break
                 for i in range(0, len(path) - 1):
