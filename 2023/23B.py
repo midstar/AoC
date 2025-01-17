@@ -1,107 +1,66 @@
 import sys
 
-def get_neighbours(lines, pos, pos_prev):
-    p = []
-    row, col = pos
-    if row > 0:
-        o = lines[row-1][col]
-        if o != '#':
-            pos_next = (row - 1,col)
-            if pos_next != pos_prev:
-                p.append((pos_next))
-    if row < (len(lines) - 1):
-        o = lines[row+1][col]
-        if o != '#':
-            pos_next = (row + 1,col)
-            if pos_next != pos_prev:
-                p.append((pos_next))
-    if col > 0:
-        o = lines[row][col-1]
-        if o != '#':
-            pos_next = (row,col - 1)
-            if pos_next != pos_prev:
-                p.append((pos_next))
-    if col < (len(lines[0]) - 1):
-        o = lines[row][col+1]
-        if o != '#':
-            pos_next = (row,col + 1)
-            if pos_next != pos_prev:
-                p.append((pos_next))
-    return p
-
-
-def bfs(lines, start, stop):
-    # (steps, pos, path)
-    q = [(0, start,[start])]
-    max_steps = 0
-    max_path = []
-    teleport = {}
-    while q:
-        (steps, pos, path) = q.pop()
-        pos_prev = None
-        if (len(path) > 1):
-            pos_prev = path[-2]
-        neighbours = get_neighbours(lines, pos, pos_prev)
-
-        if len(neighbours) == 1:
-            # We are in a small passage
-            first_pos = neighbours[0]
-            if first_pos in teleport:
-                (steps_offset, pos2, pos2_prev) = teleport[first_pos]
-                path2 = path.copy()
-                path2.append(pos2_prev)
-                path2.append(pos2) 
-                if pos2 not in path:
-                    q.append((steps + steps_offset, pos2, path2))
+def w_graph(grid,graph,steps,g_node,node,node_prev = None):
+    if node in graph and steps > 0:
+        graph[node][g_node] = steps
+    else:
+        r, c = node
+        paths = set()
+        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+            node2 = (r + dr, c + dc)
+            if node2 != node_prev and node2 in grid:
+                 paths.add(node2)
+        if len(paths) == 0:
+            if node != max(grid):
+                # Dead end
+                pass
             else:
-                first_pos = neighbours[0]
-                steps2 = steps
-                pos2 = pos
-                path2 = path.copy()
-                while len(neighbours) == 1:
-                    pos2_prev = pos2
-                    pos2 = neighbours[0]
-                    path2.append(pos2)
-                    steps2 += 1
-                    if pos2 == stop:
-                        if steps2 > max_steps:
-                            max_steps = steps2
-                            max_path = path2
-                        break
-                    neighbours = get_neighbours(lines, pos2, pos2_prev)
-                if pos2 != stop and len(neighbours) > 1:
-                    teleport[first_pos] = (steps2 - steps, pos2, pos2_prev) 
-                    if pos2 not in path:
-                        q.append((steps2, pos2, path2))
+                # Exit node
+                graph[node] = {g_node:steps}
         else:
-            for pos2 in neighbours:
-                if pos2 not in path:
-                    path2 = path.copy()
-                    path2.append(pos2)
-                    steps2 = steps + 1
-                    if pos2 == stop:
-                        if steps2 > max_steps:
-                            max_steps = steps2
-                            max_path = path2
-                    else:
-                        q.append((steps2, pos2, path2))
-    return max_steps, max_path
+            if len(paths) > 1:
+                graph[node] = {g_node:steps}
+                g_node = node
+                steps = 0
+            for n in paths:
+                w_graph(grid, graph,steps + 1, g_node, n, node)
 
+# Secure that all connections goes both ways
+def w_graph_dual(graph):
+    for key, value in graph.items():
+        for key2, l in value.items():
+            graph[key2][key] = l
 
+def s(name):
+    r,c = name
+    return f'{r}_{c}'
 
+def to_plantuml(graph):
+    for key, value in graph.items():
+        for key2, l in value.items():
+            print(f'{s(key)} --> {s(key2)}: {l}')
+
+def longest_path(graph,current,visited,length,last):
+    if current == last: return length
+    result = 0
+    for node, l in graph[current].items():
+        if node not in visited:
+            result = max(result, longest_path(graph,node,visited | {node},length + l, last))
+    return result
 
 def solve(input):
+    sys.setrecursionlimit(100000)
+
     lines = input.splitlines()
+    grid = {(r,c) for r, line in enumerate(input.splitlines()) \
+                  for c, val in enumerate(line) if val != '#'}
+    
+    graph = {(0,1):{}}
+    w_graph(grid,graph,0,(0,1),(0,1))
+    w_graph_dual(graph)
+    #to_plantuml(graph)
+    return longest_path(graph,(0,1),set(),0,max(grid))
 
-    start = (0, lines[0].index('.'))
-    last_row = len(lines) - 1
-    stop = (last_row, lines[last_row].index('.'))
-
-    max_steps, max_path = bfs(lines, start, stop)
-    #print(max_path)
-    result = max_steps
-
-    return result
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
