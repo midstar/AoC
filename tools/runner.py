@@ -1,5 +1,5 @@
 # Script to run one or multiple puzzles
-import argparse, time, sys, os, subprocess, inspect
+import argparse, time, sys, os, subprocess, inspect, glob
 
 INTERPRETERS = {
     '.py'   : 'import', # Use if scripts has solve() function
@@ -82,14 +82,18 @@ def run(full_path):
 
     return res
 
-def run_dir(path, interpreters):
+def run_multiple(interpreters, paths):
     result = []
     start_time = time.time()
 
-    for root, _, files in os.walk(path, topdown=True):
-        for file in sorted(files):
-            if os.path.splitext(file)[1] in interpreters.keys() and file[:2].isnumeric():
-                result.append(run(os.path.join(root,file)))
+    for path in paths:
+        if os.path.isdir(path):
+            for root, _, files in os.walk(path, topdown=True):
+                for file in sorted(files):
+                    if os.path.splitext(file)[1] in interpreters.keys() and file[:2].isnumeric():
+                        result.append(run(os.path.join(root,file)))
+        else:
+            run(path)
     
     execution_time = time.time() - start_time
     print()
@@ -98,7 +102,7 @@ def run_dir(path, interpreters):
 
 def main():
     parser = argparse.ArgumentParser(description=f'Advent Of Code Runner')
-    parser.add_argument('path', help='Python file with puzzle solution or directory of puzzles', nargs='?', default='.')
+    parser.add_argument('path', help='Python files with puzzle solution or directories of puzzles', nargs='*', default='.')
     parser.add_argument('-e', '--extension', type=str,
                     help=f'Only run files with extension ({" ".join(INTERPRETERS)})')
     parser.add_argument('-n', '--no-import', action='store_true',
@@ -117,10 +121,10 @@ def main():
     if args['no_import']:
         INTERPRETERS['.py'] = 'python3'
 
-    if os.path.isdir(args['path']):
-        run_dir(args['path'], interpreters)
+    if len(args['path']) == 1 and os.path.isdir(args['path'][0]) == False:
+        run(args['path'][0])
     else:
-        run(args['path'])
+        run_multiple(interpreters, args['path'])
 
 if __name__ == '__main__':
     main()   
