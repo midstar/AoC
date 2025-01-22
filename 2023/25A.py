@@ -109,3 +109,95 @@ def solve(input):
 
 if __name__ == '__main__':
         print(solve(open(sys.argv[1]).read()))
+
+'''
+Below are implementations of Kargers Algorithm and 
+Karger Stein Algorithm. Execution time is random but
+in general slower that the highest traffic algorihm 
+above.
+
+# See https://en.wikipedia.org/wiki/Karger%27s_algorithm
+def kargers_algorithm(V,E):
+    for i in range(100):
+        minimum_cut, v_group1, v_group2  = kargers_algorithm_try_once(V.copy(),list(E))
+        if (len(minimum_cut) == 3):
+            return minimum_cut, v_group1, v_group2
+        print(i,len(minimum_cut))
+    print('ERROR! Unable to find minimum cut!!')
+    exit(0)
+
+def kargers_algorithm_try_once(V,E):
+    v_new = 0
+    while len(V) > 2:
+        v1, v2 = E.pop(random.randrange(len(E)))
+        V[v_new] = V.pop(v1) | V.pop(v2)
+        E = update_edges(E, v_new, v1, v2)
+        v_new +=1
+    return E, *V.values()
+
+# Remove edge with any of vertix1 tuple element connected to any
+# vertix2 tuple element
+def update_edges(E, v_new, v1_deleted, v2_deleted):
+    E_new = []
+    for v1, v2 in E:
+        if v1 in [v1_deleted, v2_deleted]:
+            v1 = v_new
+        if v2 in [v1_deleted, v2_deleted]:
+            v2 = v_new
+        if v1 != v2:
+            E_new.append((v1,v2))
+    return E_new
+
+# Karger Stein algorithm
+# https://en.wikipedia.org/wiki/Karger%27s_algorithm
+def karger_stein_algorithm(V,E):
+    for i in range(100):
+        V1, E1 = karger_stein_fastmincut(copy.deepcopy(V),list(E))
+        if (len(E1) == 3):
+            return E1, *V1.values()
+        print(i,len(E1))
+    print('ERROR! Unable to find minimum cut!!')
+    exit(0)
+
+v_new = 0
+def karger_stein_contract(V,E,t):
+    global v_new
+    V = copy.deepcopy(V)
+    E = E.copy()
+    while len(V) > t:
+        v1, v2 = E.pop(random.randrange(len(E)))
+        V[v_new] = V.pop(v1) | V.pop(v2)
+        E = update_edges(E, v_new, v1, v2)
+        v_new += 1
+    return V,E
+
+def karger_stein_fastmincut(V,E):
+    if len(V) <= 6:
+        return karger_stein_contract(V,E,2)
+    else:
+        t = int(1 + len(V) / math.sqrt(2))
+        #print('t',t)
+        V1, E1 = karger_stein_contract(V,E,t)
+        V1, E1 = karger_stein_fastmincut(V1, E1)
+        if (len(E1) == 3):
+            return V1, E1 # We are done
+        V2, E2 = karger_stein_contract(V,E,t)
+        return karger_stein_fastmincut(V2, E2)
+
+
+def solve(input):
+    V = {}    # Vertices
+    E = set() # Edges
+    for line in input.splitlines():
+        vertex, *vertices = line.replace(':','').split(' ')
+        V[vertex] = {vertex}
+        V |= {v : {v} for v in vertices}
+        E |= {(vertex, v) for v in vertices}
+
+    _, v_group1, v_group2 = karger_stein_algorithm(V,E)
+    #_, v_group1, v_group2 = kargers_algorithm(V,E)
+    #print(v_group1)
+    #print(v_group2)
+     
+    return len(v_group1) * len(v_group2)
+'''
