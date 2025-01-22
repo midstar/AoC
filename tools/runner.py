@@ -6,14 +6,15 @@ INTERPRETERS = {
     '.js'   : 'node',
     '.pl'   : 'perl',
     '.sh'   : 'sh',
-    '.java' : 'java'
+    '.java' : 'java',
+    '.go'   : 'go run'
 }
 
 def execute_script(interpreter, full_path, input_path):
     if interpreter == 'import':
         return execute_python(full_path, input_path)
     
-    args = [interpreter, full_path, input_path]
+    args = [*interpreter.split(' '), full_path, input_path]
 
     try:
         output = subprocess.check_output(args)
