@@ -1,16 +1,17 @@
 import sys
 
-def sand_fall(grid, pos, max_y):
+def sand_fall(grid, pos, max_y, path):
+    path.append(pos)
     x, y = pos
     if y == max_y:
-        return pos
+        return pos, path
     elif (x, y + 1) not in grid:
-        return sand_fall(grid, (x, y + 1), max_y)
+        return sand_fall(grid, (x, y + 1), max_y, path)
     elif (x - 1, y + 1) not in grid:
-        return sand_fall(grid, (x - 1, y + 1), max_y)
+        return sand_fall(grid, (x - 1, y + 1), max_y, path)
     elif (x + 1, y + 1) not in grid:
-        return sand_fall(grid, (x + 1, y + 1), max_y)
-    return pos
+        return sand_fall(grid, (x + 1, y + 1), max_y, path)
+    return pos, path
 
 
 def solve(input):
@@ -29,10 +30,14 @@ def solve(input):
                     grid.add((x0,y0))
     max_y = max(y for _, y in grid) + 1
     result = 0
+    path = []
+    pos = (500,0)
     while True:
-        pos = sand_fall(grid, (500, 0), max_y)
+        pos, path = sand_fall(grid, pos, max_y, path)
         if pos != (500, 0):
             grid.add(pos)
+            path.pop()
+            pos = path.pop()
             result += 1
         else:
             result += 1 # Count in (500, 0)
