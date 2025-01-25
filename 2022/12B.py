@@ -1,4 +1,4 @@
-import argparse
+import sys
 
 def climbeable(type_from, type_to):
     if ord(type_to) <= (ord(type_from) + 1):
@@ -23,7 +23,7 @@ def get_neighbours(graph, node):
 
 # BFS Shortest Path Algorithm
 def BFS_SP(graph, start, goal):
-    explored = []
+    explored = set()
      
     # Queue for traversing the 
     # graph in the BFS
@@ -57,7 +57,7 @@ def BFS_SP(graph, start, goal):
                 # neighbour node is the goal
                 if neighbour == goal:
                     return new_path
-            explored.append(node)
+            explored.add(node)
  
     # Condition when the nodes 
     # are not connected
