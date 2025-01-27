@@ -1,21 +1,15 @@
 import sys
 
+def neighbours(grid,pos):
+    n = {(pos[0] + dr, pos[1] + dc) for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]}
+    return {p for p in n if p in grid}
+
 def basin(grid,pos,locations):
     locations.add(pos)
-    r, c = pos
-    for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-        pos2 = (r + dr, c + dc)
-        if pos2 in grid and pos2 not in locations and grid[pos2] != 9:
-            basin(grid,pos2,locations)
-    return len(locations)
+    return 1 + sum(basin(grid,pos2,locations) for pos2 in neighbours(grid,pos) if pos2 not in locations and grid[pos2] != 9)
 
 def is_low(grid,pos):
-    r, c = pos
-    for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-        pos2 = (r + dr, c + dc)
-        if pos2 in grid and grid[pos2] <= grid[pos]:
-            return False
-    return True
+    return all(grid[pos2] > grid[pos] for pos2 in neighbours(grid,pos))
 
 def solve(input):
     grid = {(r,c) : int(v) for r,l in enumerate(input.splitlines()) for c, v in enumerate(l)}
