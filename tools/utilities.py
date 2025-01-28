@@ -1,5 +1,9 @@
 # Nice to have fuctions to use in AoC puzzles
 
+# Create a dict keyed with (row,col) tuples with value from matrix
+def grid_from_matrix(input):
+    return {(r,c) : int(v) for r,l in enumerate(input.splitlines()) for c, v in enumerate(l)}
+
 # Get all neighbour positions that exists in grid
 # grid: a set or a dictionary keyed with tuple or list (row, col)
 # pos:  tuple or list (row, col)
