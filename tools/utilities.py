@@ -24,3 +24,20 @@ def print_grid(grid):
         for c in range(max_col + 1):
             print(grid[(r,c)],end='')
         print()
+
+# Dijkstra example. In this example each position has a weight (grid value)
+# and the function will find the path with total lowest weight.
+import heapq
+def dijkstra(grid, start, stop):
+    q = []
+    heapq.heappush(q, (0,start)) 
+    visited = set()
+    while q:
+        weight, pos = heapq.heappop(q) 
+        if pos == stop:
+            return weight
+        if pos in visited:
+            continue
+        visited.add(pos)
+        for pos2 in neighbours(grid,pos):
+            heapq.heappush(q, (weight + grid[pos2], pos2))
