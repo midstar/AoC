@@ -30,7 +30,7 @@ def print_grid(grid):
 import heapq
 def dijkstra(grid, start, stop):
     q = []
-    heapq.heappush(q, (0,start)) 
+    heapq.heappush(q, (0,start)) # Assumes weight 0 for start pos. Could be (grid[start], start)
     visited = set()
     while q:
         weight, pos = heapq.heappop(q) 
