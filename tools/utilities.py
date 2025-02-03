@@ -41,3 +41,9 @@ def dijkstra(grid, start, stop):
         visited.add(pos)
         for pos2 in neighbours(grid,pos):
             heapq.heappush(q, (weight + grid[pos2], pos2))
+
+import re
+# Following expression finds all patterson of mul(a,b) in a text
+# string and multiplies each a*b and summarize all products.
+def regular_expression(input):
+    return sum([int(a) * int(b) for (a,b) in re.findall(r'mul\((\d+),(\d+)\)', input)])
