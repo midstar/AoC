@@ -40,12 +40,13 @@ def dijkstra(valves, start_valve, max_minutes):
             heapq.heappush(q, (pressure - pressure2, minutes + minutes2, valve2, visited + [valve2]))
             found_neigbours = True
         if not found_neigbours: result.add(abs(pressure))
+        if pressure == -2694: print(visited)
     return max(result)
 
-def test(valves,sequence):
+def test(valves,sequence, start_valve):
     minutes_left = 30
     pressure = 0
-    v = 'AA'
+    v = start_valve
     for valve in sequence:
         for valve2, minutes2 in valves[v]['to']:
             if valve2 == valve:
@@ -60,7 +61,7 @@ def test(valves,sequence):
 
 def solve(input):
     valves = {}
-    first_valve = None
+    first_valve = 'AA'
     for line in input.splitlines():
         name, *to_names = re.findall(r'([A-Z]{2})', line)
         flow_rate = int(re.findall(r'(\d+)', line)[0])
@@ -68,7 +69,7 @@ def solve(input):
             'flow_rate' : flow_rate,
             'to' : to_names
         }
-        if not first_valve: first_valve = name
+        #if not first_valve: first_valve = name
 
     # Only the first valve and all valves with flow_rate > 0 are relevant
     valid_valves = {key for key, value in valves.items() if value['flow_rate'] > 0}
@@ -89,8 +90,8 @@ def solve(input):
 
     #print('test',test(valves,['AA', 'DD', 'BB', 'HH', 'JJ', 'EE', 'CC']))
     #print('rep')
-    #print(test(valves,['AA', 'DD', 'BB', 'JJ', 'HH', 'EE', 'CC']))
-
+    #print(test(valves,['AA', 'DD', 'BB', 'JJ', 'HH', 'EE', 'CC'],first_valve))
+    #print(test(valves,['ED', 'AW', 'LX', 'IN', 'OW', 'QR', 'SV', 'HH', 'FY', 'RM'],first_valve))
     return  dijkstra(valves, first_valve, 30)     
         
 if __name__ == '__main__':
