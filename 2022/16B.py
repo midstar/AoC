@@ -66,7 +66,8 @@ def solve(input):
 
     # Check non-intersecting paths
     result = 0
-    for my_pressure, my_valves in paths:
+    while paths:
+        my_pressure, my_valves = paths.pop()
         my_valves.remove('AA')
         for other_pressure, other_valves in paths:
             if bool(my_valves & other_valves) == False:

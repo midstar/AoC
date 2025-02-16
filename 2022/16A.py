@@ -34,30 +34,6 @@ def max_pressure(valves,valve,minutes_left,pressure = 0, visited=None):
     if not pressures: return pressure
     return max(pressures)
 
-
-
-
-def dijkstra(valves, start_valve, max_minutes):
-    q = []
-    heapq.heappush(q, (0,0,start_valve,[start_valve]))
-    result = set()
-    while q:
-        pressure, minutes, valve, visited = heapq.heappop(q) 
-        if minutes == max_minutes:
-            result.add(abs(pressure))
-            continue
-        found_neigbours = False
-        for valve2, minutes2 in valves[valve]['to']:
-            if valve2 in visited: continue
-            minutes_left = max_minutes - (minutes + minutes2)
-            if minutes_left < 0: continue
-            pressure2 = minutes_left * valves[valve2]['flow_rate']
-            heapq.heappush(q, (pressure - pressure2, minutes + minutes2, valve2, visited + [valve2]))
-            found_neigbours = True
-        if not found_neigbours: result.add(abs(pressure))
-        if pressure == -2694: print(visited)
-    return max(result)
-
 def solve(input):
     first_valve = 'AA'
     valves = {}
