@@ -22,41 +22,17 @@ def bfs(valves, start_valve, stop_value):
         for v in valves[valve]['to']:
             q.append((steps + 1, v))
 
-def max_pressure(valves,valve,minutes_left,pressure = 0, visited=None):
+def all_paths(valves,valve,minutes_left,pressure = 0, visited=None):
     if not visited: visited = {valve}
-    pressures = set()
+    all_p = []
     for valve2, minutes in valves[valve]['to']:
         if valve2 in visited: continue
         if minutes >= minutes_left: continue
         minutes_left2 = minutes_left - minutes
         pressure2 = pressure + minutes_left2 * valves[valve2]['flow_rate']
-        pressures.add(max_pressure(valves,valve2,minutes_left2,pressure2, visited | {valve2}))
-    if not pressures: return pressure
-    return max(pressures)
-
-
-
-
-def dijkstra(valves, start_valve, max_minutes):
-    q = []
-    heapq.heappush(q, (0,0,start_valve,[start_valve]))
-    result = set()
-    while q:
-        pressure, minutes, valve, visited = heapq.heappop(q) 
-        if minutes == max_minutes:
-            result.add(abs(pressure))
-            continue
-        found_neigbours = False
-        for valve2, minutes2 in valves[valve]['to']:
-            if valve2 in visited: continue
-            minutes_left = max_minutes - (minutes + minutes2)
-            if minutes_left < 0: continue
-            pressure2 = minutes_left * valves[valve2]['flow_rate']
-            heapq.heappush(q, (pressure - pressure2, minutes + minutes2, valve2, visited + [valve2]))
-            found_neigbours = True
-        if not found_neigbours: result.add(abs(pressure))
-        if pressure == -2694: print(visited)
-    return max(result)
+        all_p += all_paths(valves,valve2,minutes_left2,pressure2, visited | {valve2})
+    if all_p: return all_p
+    return [[pressure,visited]]
 
 def solve(input):
     first_valve = 'AA'
@@ -86,8 +62,17 @@ def solve(input):
             valves2[name]['to'].add((name2,bfs(valves,name,name2) + 1))
     valves = valves2
 
-    return max_pressure(valves,first_valve,30)
-    return  dijkstra(valves, first_valve, 30)     
+    paths = all_paths(valves,first_valve,26)
+
+    # Check non-intersecting paths
+    result = 0
+    for my_pressure, my_valves in paths:
+        my_valves.remove('AA')
+        for other_pressure, other_valves in paths:
+            if bool(my_valves & other_valves) == False:
+                result = max(result,my_pressure + other_pressure)
+
+    return result
         
 if __name__ == '__main__':
     print(solve(open(sys.argv[1]).read()))
