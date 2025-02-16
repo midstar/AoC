@@ -25,6 +25,18 @@ def print_grid(grid):
             print(grid[(r,c)],end='')
         print()
 
+# BFS example.
+def bfs(grid, start, stop):
+    q = [(0, start)]
+    visited = set()
+    while q:
+        steps, pos = q.pop(0)
+        if pos == stop: return steps
+        if pos in visited: continue
+        visited.add(pos)
+        for pos2 in neighbours(grid,pos):
+            q.append((steps + 1, pos2))
+
 # Dijkstra example. In this example each position has a weight (grid value)
 # and the function will find the path with total lowest weight.
 import heapq
