@@ -63,6 +63,15 @@ def solve(input):
     valves = valves2
 
     paths = all_paths(valves,first_valve,26)
+    max_pressure, max_valves = max(paths)
+
+    # Find best path not including valves from max_path
+    pre_visited = max_valves.copy()
+    pre_visited.remove('AA')
+    min_pressure, _ = max(all_paths(valves,first_valve,26,0,pre_visited))
+
+    # Remove all paths smaller than min_pressure
+    paths = [(p, v) for p, v in paths if p >= min_pressure]
 
     # Check non-intersecting paths
     result = 0
