@@ -62,8 +62,7 @@ def solve(input):
             valves2[name]['to'].add((name2,bfs(valves,name,name2) + 1))
     valves = valves2
 
-    return max_pressure(valves,first_valve,30)
-    return  dijkstra(valves, first_valve, 30)     
+    return max_pressure(valves,first_valve,30)  
         
 if __name__ == '__main__':
     print(solve(open(sys.argv[1]).read()))
