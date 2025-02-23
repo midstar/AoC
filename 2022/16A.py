@@ -1,15 +1,4 @@
-import sys, re, heapq
-
-# Distance in "minutes"
-def dist(valves, from_valve, to_valve, visited=None):
-    if not visited: visited = set()
-    visited.add(from_valve)
-    if to_valve in valves[from_valve]['to']: return 1
-    for v in valves[from_valve]['to']:
-        if v in visited: continue
-        d = dist(valves, v, to_valve, visited)
-        if d: return 1 + d
-    return None
+import sys, re
 
 def bfs(valves, start_valve, stop_value):
     q = [(0, start_valve)]
