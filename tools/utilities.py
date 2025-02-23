@@ -25,6 +25,22 @@ def print_grid(grid):
             print(grid[(r,c)],end='')
         print()
 
+# Print matrix, i.e. a set with tuple values (row,col)
+def print_matrix(matrix, filled='#', empty='.',min_row=None,min_col=None,max_row=None,max_col=None):
+    rows = {r for r,_ in matrix}
+    cols = {c for _,c in matrix}
+    min_r,min_c,max_r,max_c = min(rows),min(cols),max(rows),max(cols)
+    if min_row != None: min_r = min(min_r,min_row)
+    if min_col != None: min_c = min(min_c,min_col)
+    if max_row != None: max_r = max(max_r,max_row)
+    if max_col != None: max_c = max(max_c,max_col)
+    for r in range(min_r,max_r + 1):
+        for c in range(min_c,max_c + 1):
+            val = empty
+            if((r,c) in matrix): val = filled
+            print(val,end='')
+        print()
+
 # BFS example.
 def bfs(grid, start, stop):
     q = [(0, start)]
