@@ -86,7 +86,7 @@ def value_at(values,index,min_pattern_length=5):
     l = index - start_i
     return values[start_i] + sum(p) * (l // len(p)) + sum(p[:l % len(p)])
 
-# Find repeating pattern in list, returns index just before pattern and pattern
+# Find repeating pattern in list, returns index at first occurence of pattern and pattern
 def pattern(values, min_length):
     values_rev = list(reversed(values))
     pattern = values_rev[:min_length]
