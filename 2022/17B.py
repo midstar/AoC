@@ -22,6 +22,34 @@ class Shape():
         self.s = s2
         return True 
 
+
+# Figures out value at index (index may be larger than len(values)). The values
+# list needs to increase in a repeating pattern for this function to work
+def value_at(values,index,min_pattern_length=5):
+    steps = []
+    for i, v in enumerate(values[:-1]):
+        steps.append(values[i+1]-v)
+    start_i, p = pattern(steps,min_pattern_length)
+    l = index - start_i
+    return values[start_i] + sum(p) * (l // len(p)) + sum(p[:l % len(p)])
+
+# Find repeating pattern in list, returns index just before pattern and pattern
+def pattern(values, min_length):
+    values_rev = list(reversed(values))
+    pattern = values_rev[:min_length]
+    values_rev = values_rev[min_length:]
+    while not values_equal(pattern,values_rev[:len(pattern)]):
+        if len(values_rev) == 0: return None # No pattern found
+        pattern.append(values_rev.pop(0))
+    pattern.reverse()
+    for i in range(len(values)):
+        if values_equal(pattern, values[i:i+len(pattern)]):
+            return i, pattern
+
+# Check if to lists of values are equal
+def values_equal(values1, values2):
+    return all(v1 == v2 for v1, v2 in zip(values1, values2))
+
 def solve(input):
     winds = input.strip()
     shapes_c = '''####
@@ -46,7 +74,7 @@ def solve(input):
     top_r = 1
     wi = 0
     heights = []
-    for i in range(20000):
+    for i in range(2000):
         shape = shapes[i % len(shapes)]
         _, min_c, max_r, _ = shape.borders()
          # Start pos
@@ -67,56 +95,9 @@ def solve(input):
         min_r, _, _, _ = shape.borders()
         top_r = min(top_r, min_r)
 
-        #if i % len(shapes) == 0: heights.append(abs(top_r) + 1)
         heights.append(abs(top_r) + 1)
 
-    # Check if to lists of values are equal
-    def values_equal(values1, values2):
-        return all(v1 == v2 for v1, v2 in zip(values1, values2))
-
-    # Find repeating pattern in list, returns index just before pattern and pattern
-    def pattern(values, min_length):
-        values_rev = list(reversed(values))
-        pattern = values_rev[:min_length]
-        values_rev = values_rev[min_length:]
-        while not values_equal(pattern,values_rev[:len(pattern)]):
-            if len(values_rev) == 0: return None # No pattern found
-            pattern.append(values_rev.pop(0))
-        pattern.reverse()
-        for i in range(len(values)):
-            if values_equal(pattern, values[i:i+len(pattern)]):
-                return i, pattern
-    
-    # Figures out value at index (index may be larger than len(values)). The values
-    # list needs to increase in a repeating pattern for this function to work
-    def value_at(values,index,min_pattern_length=5):
-        steps = []
-        for i, v in enumerate(values[:-1]):
-            steps.append(values[i+1]-v)
-        start_i, p = pattern(steps,min_pattern_length)
-        print(len(p),p)
-        l = index - start_i
-        return values[start_i] + sum(p) * (l // len(p)) + sum(p[:l % len(p)])
-
-    #ys = heights
-    #for i, v in enumerate(heights[:100]):
-    #    print(f'{i}: {v}')
-    ind = 1000000000000-1
-    print(ind,len(heights))
-    print(value_at(heights,ind))
-    '''
-    ys = []
-    for i, v in enumerate(heights[:-1]):
-        ys.append(heights[i+1]-v)
-    print(ys[:40])
-    print(pattern(ys,4))
-    '''
-    #xs = [x for x in range(len(ys))]
-    #plt.plot(xs, ys)
-    #plt.show()
-
-
-    return abs(top_r) + 1
+    return value_at(heights,1000000000000 - 1)
         
 if __name__ == '__main__':
     print(solve(open(sys.argv[1]).read()))

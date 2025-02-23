@@ -75,3 +75,30 @@ import re
 # string and multiplies each a*b and summarize all products.
 def regular_expression(input):
     return sum([int(a) * int(b) for (a,b) in re.findall(r'mul\((\d+),(\d+)\)', input)])
+
+# Figures out value at index (index may be larger than len(values)). The values
+# list needs to increase or decrease in a repeating pattern for this function to work
+def value_at(values,index,min_pattern_length=5):
+    steps = []
+    for i, v in enumerate(values[:-1]):
+        steps.append(values[i+1]-v)
+    start_i, p = pattern(steps,min_pattern_length)
+    l = index - start_i
+    return values[start_i] + sum(p) * (l // len(p)) + sum(p[:l % len(p)])
+
+# Find repeating pattern in list, returns index just before pattern and pattern
+def pattern(values, min_length):
+    values_rev = list(reversed(values))
+    pattern = values_rev[:min_length]
+    values_rev = values_rev[min_length:]
+    while not values_equal(pattern,values_rev[:len(pattern)]):
+        if len(values_rev) == 0: return None # No pattern found
+        pattern.append(values_rev.pop(0))
+    pattern.reverse()
+    for i in range(len(values)):
+        if values_equal(pattern, values[i:i+len(pattern)]):
+            return i, pattern
+
+# Check if to lists of values are equal
+def values_equal(values1, values2):
+    return all(v1 == v2 for v1, v2 in zip(values1, values2))
