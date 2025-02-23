@@ -46,7 +46,7 @@ def solve(input):
     top_r = 1
     wi = 0
     heights = []
-    for i in range(2022):
+    for i in range(20000):
         shape = shapes[i % len(shapes)]
         _, min_c, max_r, _ = shape.borders()
          # Start pos
@@ -67,7 +67,8 @@ def solve(input):
         min_r, _, _, _ = shape.borders()
         top_r = min(top_r, min_r)
 
-        if i % len(shapes) == 0: heights.append(abs(top_r) + 1)
+        #if i % len(shapes) == 0: heights.append(abs(top_r) + 1)
+        heights.append(abs(top_r) + 1)
 
     # Check if to lists of values are equal
     def values_equal(values1, values2):
@@ -93,13 +94,14 @@ def solve(input):
         for i, v in enumerate(values[:-1]):
             steps.append(values[i+1]-v)
         start_i, p = pattern(steps,min_pattern_length)
+        print(len(p),p)
         l = index - start_i
         return values[start_i] + sum(p) * (l // len(p)) + sum(p[:l % len(p)])
 
     #ys = heights
     #for i, v in enumerate(heights[:100]):
     #    print(f'{i}: {v}')
-    ind = 1000000000000 // len(shapes)
+    ind = 1000000000000-1
     print(ind,len(heights))
     print(value_at(heights,ind))
     '''
